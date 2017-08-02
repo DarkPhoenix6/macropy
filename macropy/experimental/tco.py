@@ -9,9 +9,11 @@ macros = Macros()
 
 in_tc_stack = [False]
 
+
 @singleton
 class TcoIgnore:
     pass
+
 
 @singleton
 class TcoCall:
@@ -50,9 +52,9 @@ def trampoline(func, args, kwargs):
             return result
 
 
-
 def trampoline_decorator(func):
     import functools
+
     @functools.wraps(func)
     def trampolined(*args, **kwargs):
         if in_tc_stack[0]:
@@ -72,18 +74,14 @@ def tco(tree, **kw):
     # Replace returns of calls
     def return_replacer(tree, **kw):
         with switch(tree):
-            if Return(value=Call(
-                    func=func, 
-                    args=args, 
-                    starargs=starargs, 
-                    kwargs=kwargs)):
+            if Return(value=Call(func=func, args=args, starargs=starargs, kwargs=kwargs)):
                 if starargs:
                     with hq as code:
                     # get rid of starargs
                         return (TcoCall,
                                 ast[func],
                                 ast[List(args, Load())] + list(ast[starargs]),
-                                ast[kwargs or Dict([],[])])
+                                ast[kwargs or Dict([], [])])
                 else:
                     with hq as code:
                         return (TcoCall,
@@ -99,8 +97,7 @@ def tco(tree, **kw):
     # position
     def replace_tc_pos(node):
         with switch(node):
-            if Expr(value=Call(
-                    func=func,
+            if Expr(value=Call(func=func,
                     args=args,
                     starargs=starargs,
                     kwargs=kwargs)):
@@ -127,10 +124,6 @@ def tco(tree, **kw):
                 return node
 
     tree = return_replacer.recurse(tree)
-
-    tree.decorator_list = ([hq[trampoline_decorator]] +
-            tree.decorator_list)
-
+    tree.decorator_list = ([hq[trampoline_decorator]] + tree.decorator_list)
     tree.body[-1] = replace_tc_pos(tree.body[-1])
-
     return tree

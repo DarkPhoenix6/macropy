@@ -1,17 +1,19 @@
 import unittest
 
-from macropy.experimental.pattern import macros, _matching, switch, patterns, LiteralMatcher, TupleMatcher, PatternMatchException, NameMatcher, ListMatcher, PatternVarConflict, ClassMatcher, WildcardMatcher
+from macropy.experimental.pattern import macros, _matching, switch, patterns, LiteralMatcher, TupleMatcher, \
+    PatternMatchException, NameMatcher, ListMatcher, PatternVarConflict, ClassMatcher, WildcardMatcher
 from ast import BinOp
+
 
 class Foo(object):
     def __init__(self, x, y):
-          self.x = x
-          self.y = y
+        self.x = x
+        self.y = y
 
 
 class Bar(object):
     def __init__(self, a):
-          self.a = a
+        self.a = a
 
 
 class Baz(object):
@@ -51,14 +53,13 @@ class Tests(unittest.TestCase):
 
     def test_class_matcher(self):
         self.assertEquals([],
-                ClassMatcher(Foo, [LiteralMatcher(5),
-                    LiteralMatcher(6)]).match(Foo(5,6)))
+                          ClassMatcher(Foo, [LiteralMatcher(5),
+                                             LiteralMatcher(6)]).match(Foo(5, 6)))
         with self.assertRaises(PatternMatchException):
             ClassMatcher(Foo, [LiteralMatcher(5),
-                LiteralMatcher(6)]).match(Foo(5,7))
+                               LiteralMatcher(6)]).match(Foo(5, 7))
 
-        matcher1 = ClassMatcher(Foo, [NameMatcher('a'),
-                NameMatcher('b')])
+        matcher1 = ClassMatcher(Foo, [NameMatcher('a'), NameMatcher('b')])
         matcher1._match_value(Foo(4, 5))
         a = matcher1.get_var('a')
         b = matcher1.get_var('b')
